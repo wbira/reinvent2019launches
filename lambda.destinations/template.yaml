@@ -17,20 +17,40 @@ Resources:
       Handler: hello-world
       Runtime: go1.x
       Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
-      Events:
-        CatchAll:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: GET
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref OnSuccessFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref OnFailureFunction
+
+  OnSuccessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: success/
+      Handler: success
+      Runtime: go1.x
+
+  OnFailureFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: failure/
+      Handler: failure
+      Runtime: go1.x
+
+  EventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref HelloWorldFunction
+      Qualifier: "$LATEST"
+      MaximumEventAgeInSeconds: 600
+      MaximumRetryAttempts: 0
+      DestinationConfig:
+        OnSuccess:
+          Destination: !GetAtt OnSuccessFunction.Arn
+        OnFailure:
+          Destination: !GetAtt OnFailureFunction.Arn
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldAPI:
-    Description: "API Gateway endpoint URL for Prod environment for First Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
   HelloWorldFunction:
     Description: "First Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn
