@@ -3,8 +3,9 @@
 deps:
 	go get -u ./...
 
-clean: 
-	rm -rf ./hello-world/hello-world
-	
+clean:
+	rm -rf ./orders/orders
+
 build:
-	GOOS=linux GOARCH=amd64 go build -o hello-world/hello-world ./hello-world
+	GOOS=linux GOARCH=amd64 go build -o orders/orders ./orders
+	GOOS=linux GOARCH=amd64 go build -o forecast/forecast ./forecast
