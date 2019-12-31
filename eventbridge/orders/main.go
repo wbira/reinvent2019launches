@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 )
 
@@ -22,21 +25,12 @@ type Order struct {
 	Customer  Customer
 }
 
-func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var detailType string
-	var source string
-	var eventBusName string
+func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	eventBusName := os.Getenv("EVENT_BUS_NAME")
 
-	order := Order{
-		Id:        "id",
-		ProductId: "123213",
-		Price:     float64(100.50),
-		Customer:  Customer{Name: "Waldek", Address: "Wro"},
-	}
-
-	e, err := json.Marshal(order)
+	order, err := getMarshalOrder()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("Cant marshall order %v", err)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 		}, err
@@ -45,14 +39,27 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	input := eventbridge.PutEventsInput{
 		Entries: []eventbridge.PutEventsRequestEntry{
 			{
-				Detail:       aws.String(string(e)),
-				DetailType:   &detailType,
+				Detail:       aws.String(string(order)),
+				DetailType:   aws.String("ORDER_CREATED"),
 				EventBusName: &eventBusName,
-				Source:       &source,
+				Source:       aws.String(string("Order service")),
 			},
 		},
 	}
-	fmt.Println(input)
+
+	client, err := initializeEventBridgeClient()
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+		}, err
+	}
+
+	if _, err := client.PutEventsRequest(&input).Send(ctx); err != nil {
+		fmt.Printf("Cant put event %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+		}, err
+	}
 
 	return events.APIGatewayProxyResponse{
 		Body:       fmt.Sprintf("event sent"),
@@ -62,4 +69,23 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 func main() {
 	lambda.Start(handler)
+}
+
+func initializeEventBridgeClient() (*eventbridge.Client, error) {
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+		fmt.Printf("Cant load config %v", err)
+		return nil, err
+	}
+	return eventbridge.New(cfg), nil
+}
+
+func getMarshalOrder() ([]byte, error) {
+	order := Order{
+		Id:        "id",
+		ProductId: "123213",
+		Price:     float64(100.50),
+		Customer:  Customer{Name: "Waldek", Address: "Wro"},
+	}
+	return json.Marshal(order)
 }

@@ -7,7 +7,9 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 5
+    Runtime: go1.x
+    Timeout: 25
+    MemorySize: 128
 
 Resources:
   OrdersFunction:
@@ -23,6 +25,9 @@ Resources:
           Properties:
             Path: /hello
             Method: GET
+          Environment:
+      Variables:
+        EVENT_BUS_NAME: ""
 
   ForecastFunction:
     Type: AWS::Serverless::Function
