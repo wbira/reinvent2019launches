@@ -38,8 +38,9 @@ Resources:
             Path: /hello
             Method: GET
           Environment:
-      Variables:
-        EVENT_BUS_NAME: !Ref EventBus
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !Ref EventBus
 
   ForecastFunction:
     Type: AWS::Serverless::Function
@@ -63,9 +64,9 @@ Resources:
       EventPattern:
         detail-type:
           - "ORDER_CREATED"
-      Target:
+      Targets:
         - Arn: !GetAtt ForecastFunction.Arn
-
+          Id: "RuleID"
 Outputs:
   HelloWorldAPI:
     Description: "API Gateway endpoint URL for Prod environment for First Function"

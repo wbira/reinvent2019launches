@@ -9,3 +9,8 @@ clean:
 build:
 	GOOS=linux GOARCH=amd64 go build -o orders/orders ./orders
 	GOOS=linux GOARCH=amd64 go build -o forecast/forecast ./forecast
+
+deploy: build
+	sam deploy \
+	--stack-name eventbridge-sample \
+	--capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND
