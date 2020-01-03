@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Sample SAM Template for eventbridge
+
+Globals:
+  Function:
+    MemorySize: 128
+    Runtime: go1.x
+    Timeout: 25
+    Tracing: Active
+
+Resources:
+  OrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: orders/
+      Handler: orders
+      Policies:
+        - Statement:
+            - Sid: EventBridgePutEvents
+              Effect: "Allow"
+              Action:
+                - "events:PutEvents"
+              Resource: "{{resolve:ssm:EventBusArn:1}}"
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: GET
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: "{{resolve:ssm:EventBusName:1}}"
+
+  ForecastFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: forecast/
+      Handler: forecast
+
+  ForecastFunctionInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref ForecastFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OrderEvent.Arn
+
+  ForecastFunctionArn:
+    Type: "AWS::SSM::Parameter"
+    DependsOn: ForecastFunction
+    Properties:
+      Name: "ForecastLambdaArn"
+      Type: "String"
+      Value: !GetAtt ForecastFunction.Arn
+
+  OrderEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Event rule for sending order creates payload"
+      EventBusName: "{{resolve:ssm:EventBusName:1}}"
+      EventPattern:
+        detail-type:
+          - "ORDER_CREATED"
+      Targets:
+        - Arn: !GetAtt ForecastFunction.Arn
+          Id: "RuleID"
+Outputs:
+  HelloWorldAPI:
+    Description: "API Gateway endpoint URL for Prod environment for First Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  OrdersFunction:
+    Description: "First Lambda Function ARN"
+    Value: !GetAtt OrdersFunction.Arn
+  OrdersFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt OrdersFunctionRole.Arn

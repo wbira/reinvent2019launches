@@ -1,79 +1,14 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  eventbridge
-
-  Sample SAM Template for eventbridge
-
-Globals:
-  Function:
-    MemorySize: 128
-    Runtime: go1.x
-    Timeout: 25
-    Tracing: Active
+Description: Template that glue api, messeging and events nested stack
 
 Resources:
-  EventBus:
-    Type: AWS::Events::EventBus
+  Api:
+    Type: AWS::Serverless::Application
     Properties:
-      Name: "Orders"
-
-  OrdersFunction:
-    DependsOn: EventBus
-    Type: AWS::Serverless::Function
+      Location: api.template.yaml
+    DependsOn: Messeging
+  Messeging:
+    Type: AWS::Serverless::Application
     Properties:
-      CodeUri: orders/
-      Handler: orders
-      Policies:
-        - Statement:
-            - Sid: EventBridgePutEvents
-              Effect: "Allow"
-              Action:
-                - "events:PutEvents"
-              Resource: "*"
-      Events:
-        CatchAll:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: GET
-          Environment:
-      Environment:
-        Variables:
-          EVENT_BUS_NAME: !Ref EventBus
-
-  ForecastFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: forecast/
-      Handler: forecast
-
-  ForecastFunctionInvokePermission:
-    Type: "AWS::Lambda::Permission"
-    Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !Ref ForecastFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt OrderEvent.Arn
-
-  OrderEvent:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Event rule for sending order creates payload"
-      EventBusName: !Ref EventBus
-      EventPattern:
-        detail-type:
-          - "ORDER_CREATED"
-      Targets:
-        - Arn: !GetAtt ForecastFunction.Arn
-          Id: "RuleID"
-Outputs:
-  HelloWorldAPI:
-    Description: "API Gateway endpoint URL for Prod environment for First Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  OrdersFunction:
-    Description: "First Lambda Function ARN"
-    Value: !GetAtt OrdersFunction.Arn
-  OrdersFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt OrdersFunctionRole.Arn
+      Location: messeging.yaml

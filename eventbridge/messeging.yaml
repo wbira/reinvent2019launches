@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: This stack creates event bus for exchanges events
+
+Resources:
+  EventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: "Orders"
+
+  EventBusName:
+    Type: "AWS::SSM::Parameter"
+    DependsOn: EventBus
+    Properties:
+      Name: "EventBusName"
+      Type: "String"
+      Value: !GetAtt EventBus.Name
+
+  EventBusArn:
+    Type: "AWS::SSM::Parameter"
+    DependsOn: EventBus
+    Properties:
+      Name: "EventBusArn"
+      Type: "String"
+      Value: !GetAtt EventBus.Arn
