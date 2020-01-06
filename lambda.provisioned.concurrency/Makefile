@@ -14,5 +14,4 @@ build:
 deploy: build
 	sam deploy \
 	--stack-name lambda-provisioned-concurrency \
-	--guided \
 	--capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND

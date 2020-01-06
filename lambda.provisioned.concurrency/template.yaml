@@ -47,6 +47,9 @@ Resources:
             Method: GET
 
 Outputs:
-  HelloWorldAPI:
-    Description: "API Gateway endpoint URL for Prod environment for First Function"
-    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  NornalFunctionAPI:
+    Description: "API Gateway endpoint URL for Normal Function"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/normal"
+  PCFunctionAPI:
+    Description: "API Gateway endpoint URL for Provisioned concurrency Function"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/provisioned"
