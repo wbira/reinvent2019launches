@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -29,14 +30,15 @@ func (s *SqsClient) Init() error {
 	return nil
 }
 
-func (s *SqsClient) SendMessege(groupId, messageId string) {
+func (s *SqsClient) SendMessege(ctx context.Context, groupId, messageId string) (*sqs.SendMessageResponse, error) {
 	input := &sqs.SendMessageInput{
 		MessageGroupId:         aws.String(groupId),
 		MessageDeduplicationId: aws.String(fmt.Sprintf("m-%v-%v", groupId, messageId)),
 		MessageBody:            aws.String(messageId),
 		QueueUrl:               aws.String(s.queueURL),
 	}
-	s.client.SendMessageRequest(input)
+	fmt.Printf("Messege input %v \n", input)
+	return s.client.SendMessageRequest(input).Send(ctx)
 }
 
 func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -47,7 +49,9 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	}
 
 	for i := 0; i < 10; i++ {
-		client.SendMessege(string('A'), string(i))
+		if _, err := client.SendMessege(ctx, string('A'), strconv.Itoa(i)); err != nil {
+			return createResponse("Internal server error!", 500)
+		}
 	}
 	return createResponse("Items sent successfuly!", 200)
 }
