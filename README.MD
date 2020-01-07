@@ -7,9 +7,9 @@ This repository contains examples for announced features during reInvent 2019. M
 - Lambda destinations
 - EventBridge
 - Lambda Provisioned Concurrency
+- SQS Fifo trigger for lambda
 
 #### TODO
 
-- SQS Fifo trigger for lambda
 - RDS Proxy for lambda
 - Lambda Provisioned Concurrency with autoscalling
