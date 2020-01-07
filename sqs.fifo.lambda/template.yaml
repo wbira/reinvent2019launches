@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sqs.fifo.lambda
+
+  Sample SAM Template for sqs.fifo.lambda
+
+Globals:
+  Function:
+    Timeout: 5
+    Runtime: go1.x
+    Tracing: Active
+
+Resources:
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+
+  SqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      ContentBasedDeduplication: true
+      QueueName: BasicQueue.fifo
+      FifoQueue: true
+
+  TriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: trigger/
+      Handler: trigger
+      FunctionName: SqsTrigger
+      Events:
+        ApiEvent:
+          Properties:
+            Method: GET
+            Path: /trigger
+            RestApiId: !Ref MyApi
+          Type: Api
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt SqsQueue.QueueName
+      Environment:
+        Variables:
+          QUEUE_URL: !Ref SqsQueue
+
+  SqsHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handler/
+      Handler: handler
+      FunctionName: SqsHandler
+      Events:
+        SqsEvent:
+          Properties:
+            BatchSize: 1
+            Queue: !GetAtt SqsQueue.Arn
+          Type: SQS
+
+Outputs:
+  TriggerAPI:
+    Description: "API Gateway endpoint URL for Prod environment for First Function"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/trigger"
