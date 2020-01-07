@@ -10,12 +10,13 @@ Where n is a number of request and c param defines concurrent execution
 
 ### Normal lambda
 
+```
 Connection Times (ms)
-min mean[+/-sd] median max
-Connect: 154 227 158.7 187 1344
-Processing: 70 108 53.8 95 973
-Waiting: 70 104 49.9 93 972
-Total: 229 335 173.8 290 1819
+          min mean[+/-sd] median max
+Connect:     154 227 158.7 187 1344
+Processing:   70 108 53.8 95 973
+Waiting:      70 104 49.9 93 972
+Total:      229 335 173.8 290 1819
 
 Percentage of the requests served within a certain time (ms)
 50% 290
@@ -27,15 +28,17 @@ Percentage of the requests served within a certain time (ms)
 98% 1154
 99% 1378
 100% 1819 (longest request)
+```
 
 ### Provisioned concurrency lambda
 
+```
 Connection Times (ms)
-min mean[+/-sd] median max
-Connect: 155 193 33.1 185 574
+            min mean[+/-sd] median max
+Connect:    155 193 33.1 185 574
 Processing: 71 106 25.2 102 279
-Waiting: 70 105 24.0 100 279
-Total: 231 299 42.4 292 648
+Waiting:    70 105 24.0 100 279
+Total:      231 299 42.4 292 648
 
 Percentage of the requests served within a certain time (ms)
 50% 292
@@ -47,3 +50,4 @@ Percentage of the requests served within a certain time (ms)
 98% 399
 99% 433
 100% 648 (longest request)
+```
