@@ -11,5 +11,8 @@ This repository contains examples for announced features during reInvent 2019. M
 
 #### TODO
 
-- RDS Proxy for lambda
+- HTTP API Gateway
+- Express Step Function's
 - Lambda Provisioned Concurrency with autoscalling
+- RDS Proxy for lambda
+
