@@ -8,10 +8,10 @@ This repository contains examples for announced features during reInvent 2019. M
 - EventBridge
 - Lambda Provisioned Concurrency
 - SQS Fifo trigger for lambda
+- HTTP API Gateway
 
 #### TODO
-
-- HTTP API Gateway
+- More complex config for Http Api
 - Express Step Function's
 - Lambda Provisioned Concurrency with autoscalling
 - RDS Proxy for lambda
