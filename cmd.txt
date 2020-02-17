@@ -1,0 +1,7 @@
+1. sam init
+2. go mod init <your-module-name>
+3. Replace main.go with simple API Gateway response
+4. AutoPublishAlias: live
+5. ProvisionedConcurrencyConfig
+6. DeploymentPrefenrence?
+7. Define scalable target

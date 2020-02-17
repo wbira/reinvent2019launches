@@ -9,10 +9,10 @@ This repository contains examples for announced features during reInvent 2019. M
 - Lambda Provisioned Concurrency
 - SQS Fifo trigger for lambda
 - HTTP API Gateway
+- Lambda Provisioned Concurrency with autoscalling
 
 #### TODO
 - More complex config for Http Api
 - Express Step Function's
-- Lambda Provisioned Concurrency with autoscalling
 - RDS Proxy for lambda
 
