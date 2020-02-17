@@ -1,0 +1,9 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "httpApi"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-18voms54j9at2"
+s3_prefix = "httpApi"
+region = "eu-west-1"
+capabilities = "CAPABILITY_IAM"
