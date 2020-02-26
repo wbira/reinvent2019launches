@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  basic.step.functions
+
+  Sample SAM Template for basic.step.functions
+
+Globals:
+  Function:
+    Timeout: 5
+    Runtime: go1.x
+    Tracing: Active
+
+Resources:
+  HelloFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/
+      Handler: hello-world
+
+  StateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: StateMachine
+      StateMachineType: EXPRESS
+      LoggingConfiguration:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt StateMachineLogGroup.Arn
+        Level: ALL
+      DefinitionString:
+        Fn::Sub:
+          - |
+            {
+              "StartAt": "Lambda",
+              "States": {
+                "Lambda": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:states:::lambda:invoke",
+                  "Parameters": {
+                    "FunctionName": "${FunctionArn}",
+                    "Payload": {
+                      "Input.$": "$"
+                    }
+                  },
+                  "End": true
+                }
+              }
+            }
+          - FunctionArn: !GetAtt HelloFunction.Arn
+      RoleArn: !GetAtt StateMachineRole.Arn
+
+  StateMachineRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'states.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Path: '/service-role/'
+      Policies:
+        - PolicyName: root
+
+  RolePolicies:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'root'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action: 'lambda:InvokeFunction'
+            Resource: !GetAtt HelloFunction.Arn
+          - Effect: 'Allow'
+            Action:
+              - 'logs:CreateLogDelivery'
+              - 'logs:GetLogDelivery'
+              - 'logs:UpdateLogDelivery'
+              - 'logs:DeleteLogDelivery'
+              - 'logs:ListLogDeliveries'
+              - 'logs:PutResourcePolicy'
+              - 'logs:DescribeResourcePolicies'
+              - 'logs:DescribeLogGroups'
+            Resource: '*'
+
+  StateMachineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 1
