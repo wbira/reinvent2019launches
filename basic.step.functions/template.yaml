@@ -18,15 +18,15 @@ Resources:
       CodeUri: hello-world/
       Handler: hello-world
 
-  StateMachine:
+  Workflow:
     Type: AWS::StepFunctions::StateMachine
     Properties:
-      StateMachineName: StateMachine
+      StateMachineName: SimpleWorkflow
       StateMachineType: EXPRESS
       LoggingConfiguration:
         Destinations:
           - CloudWatchLogsLogGroup:
-              LogGroupArn: !GetAtt StateMachineLogGroup.Arn
+              LogGroupArn: !GetAtt WorkflowLogGroup.Arn
         Level: ALL
       DefinitionString:
         Fn::Sub:
@@ -48,9 +48,9 @@ Resources:
               }
             }
           - FunctionArn: !GetAtt HelloFunction.Arn
-      RoleArn: !GetAtt StateMachineRole.Arn
+      RoleArn: !GetAtt WorkflowRole.Arn
 
-  StateMachineRole:
+  WorkflowRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -65,30 +65,25 @@ Resources:
       Path: '/service-role/'
       Policies:
         - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'lambda:InvokeFunction'
+                Resource: !GetAtt HelloFunction.Arn
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogDelivery'
+                  - 'logs:GetLogDelivery'
+                  - 'logs:UpdateLogDelivery'
+                  - 'logs:DeleteLogDelivery'
+                  - 'logs:ListLogDeliveries'
+                  - 'logs:PutResourcePolicy'
+                  - 'logs:DescribeResourcePolicies'
+                  - 'logs:DescribeLogGroups'
+                Resource: '*'
 
-  RolePolicies:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: 'root'
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Action: 'lambda:InvokeFunction'
-            Resource: !GetAtt HelloFunction.Arn
-          - Effect: 'Allow'
-            Action:
-              - 'logs:CreateLogDelivery'
-              - 'logs:GetLogDelivery'
-              - 'logs:UpdateLogDelivery'
-              - 'logs:DeleteLogDelivery'
-              - 'logs:ListLogDeliveries'
-              - 'logs:PutResourcePolicy'
-              - 'logs:DescribeResourcePolicies'
-              - 'logs:DescribeLogGroups'
-            Resource: '*'
-
-  StateMachineLogGroup:
+  WorkflowLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 1
